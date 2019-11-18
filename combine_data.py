@@ -76,6 +76,7 @@ def combine_data():
 
     print(data)
 
+    data.to_csv('combineData.csv', index=False)
     #docx = np.loadtxt("ActivityDiary.txt", dtype='str', delimiter=' ')
 
     #print(docx)
