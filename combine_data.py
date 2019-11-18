@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from datetime import datetime
+import time
 
 
 def read_activity_diary():
@@ -18,12 +19,22 @@ def read_activity_diary():
 
 
 def change_timestamp_format(timestamp):
-    date, time = timestamp.split(' ')
+    date, tme = timestamp.split(' ')
     y, m, d = date.split('/')
 
     new_date = m + '/' + d + '/' + y
 
-    return  new_date + ' ' + time
+    return  new_date + ' ' + tme
+
+
+def change_to_unixTimestamp(timestamp):
+    date, tme = timestamp.split(' ')
+    m, d, y = date.split('/')
+    hr, mn, sec = tme.split(':')
+
+    dt = datetime(int(y), int(m), int(d), int(hr), int(mn), int(sec))
+    
+    return int(time.mktime(dt.timetuple()))
 
 
 def read_accelerator_csv():
@@ -47,11 +58,11 @@ def read_GPS_csv():
         if len(date) == 9:
             date = '0' + date
         
-        time = GPS['LOCAL TIME'][i][:-1] + '0'
-        if len(time) == 7:
-            time = '0' + time
+        tme = GPS['LOCAL TIME'][i][:-1] + '0'
+        if len(tme) == 7:
+            tme = '0' + tme
 
-        GPS.loc[i, 'TimeStamp'] = date + ' ' + time
+        GPS.loc[i, 'TimeStamp'] = date + ' ' + tme
 
     print(GPS)
 
@@ -59,7 +70,10 @@ def read_GPS_csv():
 
 
 def clean_data(data):
-    data = data.drop(columns=['INDEX', 'VALID', 'TRACK ID', 'UTC DATE', 'UTC TIME', 'MS', 'VALID', 'G-X', 'G-Y', 'G-Z'])
+    data = data.drop(columns=['LOCAL DATE', 'LOCAL TIME','INDEX', 'VALID', 'TRACK ID', 'UTC DATE', 'UTC TIME', 'MS', 'VALID', 'G-X', 'G-Y', 'G-Z'])
+
+    data.insert(loc=1, column='UnixTime', value=0.0)
+    data['UnixTime'] = data.TimeStamp.apply(change_to_unixTimestamp)
     
     return data
 
@@ -77,8 +91,8 @@ def combine_data():
     print(data)
 
     data.to_csv('combineData.csv', index=False)
+    
     #docx = np.loadtxt("ActivityDiary.txt", dtype='str', delimiter=' ')
-
     #print(docx)
 
 
