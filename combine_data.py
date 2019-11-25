@@ -37,8 +37,8 @@ def change_to_unixTimestamp(timestamp):
     return int(time.mktime(dt.timetuple()))
 
 
-def read_accelerator_csv():
-    accel = pd.read_csv("AccelrometerData.csv")
+def read_accelerator_csv(fname):
+    accel = pd.read_csv(fname)
 
     accel.TimeStamp = accel.TimeStamp.str.replace('-', '/')
     accel.TimeStamp = accel.TimeStamp.apply(change_timestamp_format)
@@ -48,8 +48,8 @@ def read_accelerator_csv():
     return accel
 
 
-def read_GPS_csv():
-    GPS = pd.read_csv("GPSData.csv")
+def read_GPS_csv(fname):
+    GPS = pd.read_csv(fname)
 
     GPS.insert(loc=3, column='TimeStamp', value=' ')
     
@@ -78,24 +78,26 @@ def clean_data(data):
     return data
 
 
-def combine_data():
+def combine_data(folder):
     #read_activity_diary()
-    accel_data = read_accelerator_csv()
-    GPS_data = read_GPS_csv()
+    accel_data = read_accelerator_csv(folder + 'AccelrometerData.csv')
+    GPS_data = read_GPS_csv(folder + 'GPSData.csv')
 
-    print(accel_data.TimeStamp[25380])
+    #print(accel_data.TimeStamp[25380])
 
     data = GPS_data.join(accel_data.set_index('TimeStamp'), on='TimeStamp')
     data = clean_data(data)
 
-    print(data)
+    #print(data)
 
-    data.to_csv('combineData.csv', index=False)
+    data.to_csv(folder[:-1] + '_combineData.csv', index=False)
     
-    #docx = np.loadtxt("ActivityDiary.txt", dtype='str', delimiter=' ')
-    #print(docx)
+    print(folder, ': ', len(data))
 
 
 
 if __name__ == "__main__":
-    combine_data()
+    #combine_data('Participant1/')
+    combine_data('Participant2/')
+    combine_data('Participant3/')
+
